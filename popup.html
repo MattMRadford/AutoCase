@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AutoCase</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      width: 220px;
+      padding: 12px;
+      background: #f9f9f9;
+      margin: 0;
+    }
+    h1 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .option {
+      margin-bottom: 8px;
+    }
+    label {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Choose casing mode</h1>
+  <form id="casingForm">
+    <div class="option"><label><input type="radio" name="mode" value="title"> Title Case</label></div>
+    <div class="option"><label><input type="radio" name="mode" value="sentence"> Sentence case</label></div>
+    <div class="option"><label><input type="radio" name="mode" value="upper"> UPPERCASE</label></div>
+    <div class="option"><label><input type="radio" name="mode" value="lower"> lowercase</label></div>
+  </form>
+</body>
+<script src="popup.js"></script>
+</html>

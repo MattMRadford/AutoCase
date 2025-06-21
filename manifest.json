@@ -3,6 +3,7 @@
   "name": "AutoCase",
   "version": "0.1",
   "description": "Edit selected text to have specified case.",
+  "permissions": ["storage"],
   "icons": {
     "16": "images/dog2.png"
   },
@@ -13,5 +14,9 @@
             "https://*/*"
         ]
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "images/dog2.png"
+  }
 }
