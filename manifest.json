@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AutoCase",
+  "version": "0.1",
+  "description": "Edit selected text to have specified case.",
+  "icons": {
+    "16": "images/dog2.png"
+  },
+  "content_scripts": [
+    {
+        "js": ["scripts/content.js"],
+        "matches": [
+            "https://*/*"
+        ]
+    }
+  ]
+}
