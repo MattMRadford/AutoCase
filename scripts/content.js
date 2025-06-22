@@ -96,11 +96,18 @@ function toTitleCase(str) {
   
 }
 
-function toSentenceCase(str) {
-  const trimmed = str.trim().toLowerCase();
-  let ret = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-  if (!/[.!?]$/.test(ret)) ret += '.';
-  return ret;
+function toSentenceCase(text) {
+  return text
+    .match(/[^.!?]+[.!?]*\s*/g) // Split into sentence-like chunks
+    .map(sentence => {
+      const trimmed = sentence.trimStart();
+      if (!trimmed) return '';
+      return (
+        trimmed.charAt(0).toUpperCase() +
+        trimmed.slice(1).toLowerCase()
+      );
+    })
+    .join('');
 }
 
 async function getSelectedText() {
