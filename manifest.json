@@ -17,6 +17,6 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "images/dog2.png"
+    "default_icon": "images/icon16v3.png"
   }
 }

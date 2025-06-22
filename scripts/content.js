@@ -27,8 +27,22 @@ function getSelectedText() {
     let selection = "";
     const shadowRoot = active?.shadowRoot;
     const innerTextArea = shadowRoot?.querySelector('textarea');
+    const host = document.querySelector('faceplate-search-input');
+    const shadow = host?.shadowRoot;
+    const searchBarInput = shadow?.querySelector('input[name="q"]');
+    
+    if (searchBarInput) {
+        selection = searchBarInput.value.substring(input.selectionStart, input.selectionEnd);
+        getMode().then((mode) => {
+            const transformed = applyCasing(selection, mode);
+            if (transformed) {
+                 console.log("Reddit search bar text selected: ", selection);
+                console.log("Transformed to ", mode, " :", transformed);
+            }
+        });
+    }
 
-    if (innerTextArea) {
+    else if (innerTextArea) {
         selection = innerTextArea.value.substring(innerTextArea.selectionStart, innerTextArea.selectionEnd);
         getMode().then((mode) => {
             const transformed = applyCasing(selection, mode);
@@ -57,7 +71,7 @@ function getSelectedText() {
         getMode().then((mode) => {
             const transformed = applyCasing(selection, mode);
             if (transformed) {
-                console.log("You selected:", selection, "in an editable span (Reddit)");
+                console.log("You selected:", selection, "in an editable element of some sort (Reddit)");
                 console.log("Transformed to ", mode, " :", transformed);
             }
         });
