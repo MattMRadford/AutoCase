@@ -1,3 +1,8 @@
+import nlp from 'compromise';
+
+
+
+
 function getMode() {
   return new Promise((resolve) => {
     chrome.storage.sync.get("autocaseMode", (result) => {
@@ -15,10 +20,17 @@ const checkEditor = setInterval(() => {
   }
 }, 500);
 
+
 document.addEventListener("mouseup", () => {
     console.log("Mouseup fired");
+    chrome.storage.sync.get('autocaseEnabled', (data) => {
+        if (!(data.autocaseEnabled)) return;
+        const mode = data.autocaseMode || 'title';
 
-    let obj = getSelectedText().then(applyCaseChange);
+        let obj = getSelectedText().then(applyCaseChange);
+    });
+
+    
     
 });
 
@@ -37,29 +49,36 @@ async function listenInsideIframe() {
 
         if (doc && win) {
             doc.addEventListener('mouseup', () => {
-                const selected = win.getSelection()?.toString().trim();
-                const anchor = win.getSelection().anchorNode;
-                const isEdit = anchor?.parentElement?.closest('input, textarea, [contenteditable="true"]');
-                if (selected) {
-                    if (isEdit) {
-                        console.log("You selected inside an editable iframe: ", selected);
-                        let obj = {
-                            type: 'iframe-edit',
-                            element: isEdit,
-                            text: applyCasing(selected, mode)
+                chrome.storage.sync.get(['autocaseEnabled', 'autocaseMode'], (data) => {
+                    if (!(data.autocaseEnabled)) return;
+                    const mode = data.autocaseMode || 'title';
+
+                    let obj = getSelectedText().then(applyCaseChange);
+                    const selected = win.getSelection()?.toString().trim();
+                    const anchor = win.getSelection().anchorNode;
+                    const isEdit = anchor?.parentElement?.closest('input, textarea, [contenteditable="true"]');
+                    if (selected) {
+                        if (isEdit) {
+                            console.log("You selected inside an editable iframe: ", selected);
+                            let obj = {
+                                type: 'iframe-edit',
+                                element: isEdit,
+                                text: applyCasing(selected, mode)
+                            }
+                            applyCaseChange(obj);
                         }
-                        applyCaseChange(obj);
-                    }
-                    else {
-                        let obj = {
-                            type: 'iframe-nonedit',
-                            element: iframe,
-                            text: applyCasing(selected, mode)
+                        else {
+                            let obj = {
+                                type: 'iframe-nonedit',
+                                element: iframe,
+                                text: applyCasing(selected, mode)
+                            }
+                            console.log("You selected inside an iframe: ", selected);
+                            applyCaseChange(obj);
                         }
-                        console.log("You selected inside an iframe: ", selected);
-                        applyCaseChange(obj);
                     }
-                }
+                });
+                
             });
         }
     }
@@ -80,12 +99,43 @@ function applyCasing(selectedText, mode) {
         return selectedText.toLowerCase();
     }
     else if (mode == "title") {
-        return toTitleCase(selectedText);
+        return smartTitleCase(selectedText);
     }
     else if (mode == "sentence") {
         return toSentenceCase(selectedText);
     }
+    else if (mode == "snake") {
+        return toSnakeCase(selectedText);
+    }
+    else {
+        return toCamelCase(selectedText);
+    }
 }
+
+function smartTitleCase(text) {
+
+
+  const doc = nlp(text);
+  const allTerms = doc.terms().json().flatMap(d => d.terms); // flatten all chunks
+
+  return allTerms
+    .map((term, i, arr) => {
+      const word = term.text;
+      const tag = term.tags.join(',');
+
+      const isFirstOrLast = i === 0 || i === arr.length - 1;
+      const isImportant = /Noun|Verb|Adjective|Adverb|Pronoun/.test(tag);
+
+      if (isFirstOrLast || isImportant) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      } else {
+        return word.toLowerCase();
+      }
+    })
+    .join(' ');
+}
+
+
 
 function toTitleCase(str) {
     let new_str = str.toLowerCase();
@@ -109,6 +159,30 @@ function toSentenceCase(text) {
     })
     .join('');
 }
+
+function toSnakeCase(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // remove punctuation
+    .split(/\s+/)
+    .join('_');
+}
+
+function toCamelCase(text) {
+  const words = text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/);
+
+  return words[0] + words.slice(1).map(capitalize).join('');
+}
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 
 async function getSelectedText() {
     let obj =  {
