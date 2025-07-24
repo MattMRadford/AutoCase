@@ -1,7 +1,153 @@
 import nlp from 'compromise';
 
 
+// Add at the top with other variables
+let usageTracker = {
+  count: 0,
+  reviewRequested: false,
+  
+};
 
+// Load existing usage data when content script loads
+chrome.storage.local.get(['usageCount', 'reviewRequested'], (data) => {
+  usageTracker.count = data.usageCount || 0;
+  usageTracker.reviewRequested = data.reviewRequested || false; 
+});
+
+// Add this function to content.js
+function trackUsageAndPromptReview() {
+  usageTracker.count++;
+  
+  // Save updated count
+  chrome.storage.local.set({ usageCount: usageTracker.count });
+  
+  // Show review prompt after 3 successful uses AND at least 1 day after install
+  
+  
+  if (usageTracker.count === 3 && !usageTracker.reviewRequested) {
+    setTimeout(() => showReviewPrompt(), 1000); // Small delay so user sees the conversion first
+    usageTracker.reviewRequested = true;
+    chrome.storage.local.set({ reviewRequested: true });
+  }
+}
+
+function showReviewPrompt() {
+  // Check if prompt already exists
+  if (document.getElementById('autocase-review-banner')) return;
+  
+  const reviewBanner = document.createElement('div');
+  reviewBanner.id = 'autocase-review-banner';
+  reviewBanner.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #007acc, #0066bb);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,122,204,0.3);
+      z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      max-width: 320px;
+      animation: slideInReview 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 1px solid rgba(255,255,255,0.2);
+    ">
+      <div style="display: flex; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 20px; margin-right: 8px;">✨</span>
+        <strong style="font-size: 15px;">Loving AutoCase?</strong>
+      </div>
+      <div style="margin-bottom: 12px; opacity: 0.95; line-height: 1.4;">
+        You've used AutoCase 3 times! Help other developers discover it with a quick review.
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button id="review-yes" style="
+          background: white;
+          color: #007acc;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 13px;
+          transition: transform 0.1s ease;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          ⭐ Leave Review
+        </button>
+        <button id="review-later" style="
+          background: rgba(255,255,255,0.15);
+          color: white;
+          border: 1px solid rgba(255,255,255,0.3);
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 13px;
+        ">
+          Later
+        </button>
+        <button id="review-never" style="
+          background: transparent;
+          color: rgba(255,255,255,0.7);
+          border: none;
+          padding: 8px;
+          cursor: pointer;
+          font-size: 16px;
+          border-radius: 4px;
+        " title="Don't ask again">
+          ✕
+        </button>
+      </div>
+    </div>
+    <style>
+      @keyframes slideInReview {
+        from { 
+          transform: translateX(400px) scale(0.8); 
+          opacity: 0; 
+        }
+        to { 
+          transform: translateX(0) scale(1); 
+          opacity: 1; 
+        }
+      }
+    </style>
+  `;
+  
+  document.body.appendChild(reviewBanner);
+  
+  // Get your actual extension ID from Chrome Web Store
+  const extensionId = 'inmghklhnephcaocldmdbikmipomhjnd'; // Replace with your actual ID
+  
+  // Event listeners
+  document.getElementById('review-yes').onclick = () => {
+    window.open(`https://chromewebstore.google.com/detail/inmghklhnephcaocldmdbikmipomhjnd/reviews`, '_blank');
+    // Track that user clicked review
+    chrome.storage.local.set({ reviewClicked: true });
+  };
+  
+  document.getElementById('review-later').onclick = () => {
+    reviewBanner.remove();
+    // Reset to ask again after 10 more uses
+    usageTracker.count = -7; // So they'll be prompted again at 3 uses from now
+    usageTracker.reviewRequested = false;
+    chrome.storage.local.set({ 
+      usageCount: -7, 
+      reviewRequested: false 
+    });
+  };
+  
+  document.getElementById('review-never').onclick = () => {
+    reviewBanner.remove();
+    chrome.storage.local.set({ reviewRequested: true, reviewNeverAsk: true });
+  };
+  
+  // Auto-remove after 15 seconds
+  setTimeout(() => {
+    if (reviewBanner.parentNode) {
+      reviewBanner.remove();
+    }
+  }, 15000);
+}
 
 function getMode() {
   return new Promise((resolve) => {
@@ -282,6 +428,7 @@ async function getSelectedText() {
 
 }
 
+
 function applyCaseChange(object) {
     if (!object) return;
     const {type, element, text} = object;
@@ -315,4 +462,5 @@ function applyCaseChange(object) {
             console.log("Copied to clipboard: ", text);
         })
     }
+    trackUsageAndPromptReview();
 }

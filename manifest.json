@@ -1,15 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "AutoCase",
-  "version": "0.1",
-  "description": "Edit selected text to have specified case.",
-  "permissions": ["storage"],
+  "name": "AutoCase: AI Text Formatter",
+  "version": "1.0",
+  "description": "Instantly format text to have corrected case with one simple highlight including NLP powered smart title case.",
+  "permissions": ["storage", "commands", "notifications"],
   "icons": {
-    "16": "images/dog2.png"
+    "48": "images/icon48.png",
+    "128":"images/store_icon.png"
   },
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+
+
+  },
+
   "content_scripts": [
     {
-        "js": ["scripts/content.js"],
+        "js": ["scripts/dist/content.bundle.js"],
         "matches": [
             "https://*/*"
         ]
@@ -18,5 +26,33 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": "images/icon16v3.png"
+  },
+  "commands": {
+    "set-title-case": {
+      "suggested_key": { "default": "Ctrl+Shift+1" },
+      "description": "Set mode to Title Case"
+    },
+    "set-sentence-case": {
+      "suggested_key": { "default": "Ctrl+Shift+2" },
+      "description": "Set mode to Sentence case"
+    },
+    "set-upper-case": {
+      "suggested_key": { "default": "Ctrl+Shift+3" },
+      "description": "Set mode to UPPERCASE"
+    },
+    "set-lower-case": {
+      "suggested_key": { "default": "Ctrl+Shift+4" },
+      "description": "Set mode to lowercase"
+    },
+    "set-snake-case": {
+      "description": "Set mode to snake_case"
+    },
+    "set-camel-case": {
+      "description": "Set mode to camelCase"
+    },
+    "toggle-autocase": {
+      "description": "Toggle AutoCase on/off"
+    }
   }
+
 }

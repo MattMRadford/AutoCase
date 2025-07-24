@@ -168,7 +168,41 @@
     <div class="radio-container"></div>
         <label><input type="radio" name="mode" value="lower"> lowercase</label>
     </div>
+    <div class="radio-container">
+      <label><input type="radio" name="mode" value="snake"> snake_case</label>
+    </div>
+    <div class="radio-container">
+      <label><input type="radio" name="mode" value="camel"> camelCase</label>
+    </div>
+
+    <label>
+        <input type="checkbox" id="toggle" checked />
+            AutoCase Enabled
+    </label>
+
 </form>
+<div style="
+  text-align: center; 
+  margin-top: 12px; 
+  padding-top: 8px; 
+  border-top: 1px solid #3c3c3c;
+">
+  <a href="#" id="rateLink" style="
+    color: #007acc; 
+    text-decoration: none; 
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  ">
+    <span>⭐</span> Rate AutoCase
+  </a>
+</div>
+<div id="toast" style="display:none; position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+background:#333; color:#fff; padding:8px 16px; border-radius:4px; font-size:14px; z-index:999;">
+  Mode changed
+</div>
 </body>
 <script src="popup.js"></script>
 </html>
